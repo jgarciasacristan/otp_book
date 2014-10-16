@@ -6,7 +6,7 @@
 %% API Function Exports
 %% ------------------------------------------------------------------
 
--export([start/0, allocate/0, deallocate/1]).
+-export([start/0, allocate/0, deallocate/1, stop/0]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -28,6 +28,9 @@ allocate() ->
 deallocate(Frequency) ->
     gen_server:cast(?SERVER, {deallocate, Frequency}).
 
+stop() ->
+    gen_server:cast(?SERVER, stop).
+
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
@@ -44,9 +47,13 @@ handle_call({allocate, Pid}, _From, Frequencies) ->
 
 handle_cast({deallocate, Freq}, Frequencies) ->
     NewFrequencies = deallocate(Frequencies, Freq),
-    {noreply, NewFrequencies}.
+    {noreply, NewFrequencies};
+handle_cast(stop, Frequencies) ->
+    {stop, normal, Frequencies}.
 
-handle_info(_Info, State) ->
+
+handle_info(Info, State) ->
+    io:format("Message received ~p~n", [Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
